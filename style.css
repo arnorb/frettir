@@ -116,7 +116,7 @@ article h2 a:hover {
 	width: 150px;
 	height: 150px;
 	float: right;
-	margin: 0 0 10px 10px;
+	margin: 0 0 0 10px;
 	overflow: hidden;
 	border: 1px solid rgba(0, 0, 0, .1);
 

@@ -52,12 +52,20 @@ function sort_items($a, $b)
 {
 	return SimplePie::sort_items($a, $b);
 }
+
+function is_image($path) {
+		$a = getimagesize($path);
+		$image_type = $a[2];
+		
+		if(in_array($image_type , array(IMAGETYPE_GIF , IMAGETYPE_JPEG ,IMAGETYPE_PNG)))
+		{
+			return true;
+		}
+		return false;
+}
  
 // Now we can sort $first_items with our custom sorting function.
 usort($first_items, "sort_items");
-
-
-
 
 setlocale(LC_ALL, 'is_IS.utf8');
 
@@ -139,7 +147,6 @@ setlocale(LC_ALL, 'is_IS.utf8');
 
 				if ($source == 'mbl' || $source == 'visir' || $source == 'ruv') {
 					
-				//	$filename = 'img/' . $source . '-' . $item->get_date('YmdHis') . '.jpg';
 					$filename = 'img/' . $md5 . '.jpg';
 
 				// Viðskiptablaðið has no image at all, so we just serve a small screenshot of their header
@@ -149,7 +156,7 @@ setlocale(LC_ALL, 'is_IS.utf8');
 
 				if (!file_exists($filename) ) {
 
-
+					$hasimage = true;
 
 					// The image src from mbl is embedded in the description, so we have to fetch it from the DOM, using phpQuery.
 					if ($source == 'mbl' || $source == 'ruv') {
@@ -158,11 +165,6 @@ setlocale(LC_ALL, 'is_IS.utf8');
 						$pq = phpQuery::newDocumentHTML($texthtml);
 						$img = $pq->find('img:first');
 						$src = $img->attr('src');
-
-					// If mbl has no image, the item is a media clip. We serve a generic image for that.
-					if ($src == '') {
-						$filename = 'mbltv.jpg';
-					}		
 
 					// Visir has the src as a media thumbnail, but it is urlencoded. PHP makes it simple to decode, thankfully.
 					} elseif ($source == 'visir') {
@@ -179,63 +181,70 @@ setlocale(LC_ALL, 'is_IS.utf8');
 
 					}
 
-					// Rúv sometimes confuses us with png images and I suppose we might run into that from others as well.
-					if (exif_imagetype($src) == 3) {
-						$image = imagecreatefrompng($src);
-					} elseif (exif_imagetype($src) == 1) {
-						$image = imagecreatefromgif($src);
+					if (is_image($src) == true) {
+					
+						// Rúv sometimes confuses us with png images and I suppose we might run into that from others as well.
+						if (exif_imagetype($src) == 3) {
+							$image = imagecreatefrompng($src);
+						} elseif (exif_imagetype($src) == 1) {
+							$image = imagecreatefromgif($src);
+						} else {
+							$image = imagecreatefromjpeg($src);
+						} 
+
+						$thumb_width = 150;
+						$thumb_height = 150;
+
+						$width = imagesx($image);
+						$height = imagesy($image);
+
+						$original_aspect = $width / $height;
+						$thumb_aspect = $thumb_width / $thumb_height;
+
+						if ( $original_aspect >= $thumb_aspect )
+						{
+						   // If image is wider than thumbnail (in aspect ratio sense)
+						   $new_height = $thumb_height;
+						   $new_width = $width / ($height / $thumb_height);
+						}
+						else
+						{
+						   // If the thumbnail is wider than the image
+						   $new_width = $thumb_width;
+						   $new_height = $height / ($width / $thumb_width);
+						}
+
+						$thumb = imagecreatetruecolor( $thumb_width, $thumb_height );
+
+						// Resize and crop
+						imagecopyresampled($thumb,
+						                   $image,
+						                   0 - ($new_width - $thumb_width) / 2, // Center the image horizontally
+						                   0 - ($new_height - $thumb_height) / 2, // Center the image vertically
+						                   0, 0,
+						                   $new_width, $new_height,
+						                   $width, $height);
+						imagejpeg($thumb, $filename, 80);
+
+						imagedestroy($image);
+						imagedestroy($thumb);
+
 					} else {
-						$image = imagecreatefromjpeg($src);
-					} 
-
-					$thumb_width = 150;
-					$thumb_height = 150;
-
-					$width = imagesx($image);
-					$height = imagesy($image);
-
-					$original_aspect = $width / $height;
-					$thumb_aspect = $thumb_width / $thumb_height;
-
-					if ( $original_aspect >= $thumb_aspect )
-					{
-					   // If image is wider than thumbnail (in aspect ratio sense)
-					   $new_height = $thumb_height;
-					   $new_width = $width / ($height / $thumb_height);
+						$filename = 'noimg.jpg';
 					}
-					else
-					{
-					   // If the thumbnail is wider than the image
-					   $new_width = $thumb_width;
-					   $new_height = $height / ($width / $thumb_width);
-					}
-
-					$thumb = imagecreatetruecolor( $thumb_width, $thumb_height );
-
-					// Resize and crop
-					imagecopyresampled($thumb,
-					                   $image,
-					                   0 - ($new_width - $thumb_width) / 2, // Center the image horizontally
-					                   0 - ($new_height - $thumb_height) / 2, // Center the image vertically
-					                   0, 0,
-					                   $new_width, $new_height,
-					                   $width, $height);
-					imagejpeg($thumb, $filename, 80);
-
-					imagedestroy($image);
-					imagedestroy($thumb);
 
 				}
 
-
-
 				?> 
 
+
+
+				<?php //if(is_image($filename)) : ?>
 				<div class="newsimage">
 					<a href="<?php echo $item->get_permalink(); ?>" title="Frétt birt þann <?php echo $item->get_local_date('%e. %B %Y kl. %k:%M') ?>" target="_blank"><img src="<?php echo $filename ?>"></a>
 				</div>
 
-			
+				<?php //endif; ?>
 
 
 				<p class="meta">
@@ -346,6 +355,20 @@ setlocale(LC_ALL, 'is_IS.utf8');
 
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
 <!--<script src="scripts.js"></script>-->
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-37483608-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
 
 </body>
 
