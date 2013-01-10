@@ -117,33 +117,35 @@ setlocale(LC_ALL, 'is_IS.utf8');
 
 		<section id="content">
 
-		<?php foreach ($first_items as $item): ?>
+		<?php foreach ($first_items as $item):
+		$feed = $item->get_feed();
+		
+		// figure out the source or provider
+		if (strpos($feed->get_title(), 'mbl.is') !== false) {
+			$source = 'mbl';
+		}
+		elseif (strpos($feed->get_title(), 'Vísir') !== false) {
+			$source = 'visir';
+		}
+		elseif (strpos($feed->get_title(), 'Viðskiptablaðið') !== false) {
+			$source = 'vb';
+		} elseif (strpos($feed->get_permalink(), 'ruv.is') !== false) {
+			$source = 'ruv';
+		} else {
+			$source = 'unknown';
+		}
+
+		$md5 = md5($source . $item->get_date('YmdHis') . $item->get_title() . $item->get_description() );
+
+		 ?>
+
+		 <?php if ($md5 != $lastitem) : ?>
 
 			<article>
 
 				<?php
 
-				$feed = $item->get_feed();
 
-				// Let's start with a default image. If no other is provided, this one is used.
-				$src='';
-
-				// figure out the source or provider
-				if (strpos($feed->get_title(), 'mbl.is') !== false) {
-					$source = 'mbl';
-				}
-				elseif (strpos($feed->get_title(), 'Vísir') !== false) {
-					$source = 'visir';
-				}
-				elseif (strpos($feed->get_title(), 'Viðskiptablaðið') !== false) {
-					$source = 'vb';
-				} elseif (strpos($feed->get_permalink(), 'ruv.is') !== false) {
-					$source = 'ruv';
-				} else {
-					$source = 'unknown';
-				}
-
-				$md5 = md5($source . $item->get_date('YmdHis') . $item->get_title() . $item->get_description() );
 
 				if ($source == 'mbl' || $source == 'visir' || $source == 'ruv') {
 					
@@ -230,7 +232,9 @@ setlocale(LC_ALL, 'is_IS.utf8');
 						imagedestroy($thumb);
 
 					} else {
-						$filename = 'noimg.jpg';
+						$replacements = array('noimg.jpg','noimg2.jpg','noimg3.jpg');
+						$rand_key = array_rand($replacements,1);
+						$filename = $replacements[$rand_key];
 					}
 
 				}
@@ -249,8 +253,8 @@ setlocale(LC_ALL, 'is_IS.utf8');
 
 				<p class="meta">
 
-
-					<span class="item-title">
+					<span class="item-source">
+						
 						<?php
 
 							$feed = $item->get_feed();
@@ -271,7 +275,7 @@ setlocale(LC_ALL, 'is_IS.utf8');
 							}
 
 						?></span>
-
+	
 					<span class="item-date">fyrir <?php echo doRelativeDate( $item->get_date( SIMPLEPIE_RELATIVE_DATE ) );?></span>
 
 				</p>
@@ -336,15 +340,30 @@ setlocale(LC_ALL, 'is_IS.utf8');
 							} else {
 								echo strip_tags($texthtml);
 							}
+
+						$lastitem = $md5;
+
+						$itemnumber++;
 							
 						?>
 						</p>
 			</article>
 
+			<?php if ($itemnumber == 3) : ?>
+
+			<article class="auglysing">
+				<h2><a href="#">Þín auglýsing hér?</a></h2>
+				<p>Viltu auglýsa á vefnum okkar? Sendu okkur póst á auglysingar@frett.ir.</p> 
+			</article>
+
+			<?php endif; ?>	
+
+			<?php endif; ?>	
+
 		<?php endforeach; ?>
 
 		<footer>
-			<?php echo "Time Elapsed: ".(microtime(true) - $time)."s"; ?>
+			<?php echo "Vinnslutími: ".round((microtime(true) - $time),2)." sekúndur"; ?>
 		</footer>
 
 		</section>

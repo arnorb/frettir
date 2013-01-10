@@ -44,21 +44,21 @@ body {
 
 .meta {
 	font-size: 0.9em;
-	font-weight: 700;
+	font-weight: 500;
+	color: #4E4E4E;
 	margin-bottom: 5px;
 }
 
-.item-title {
+.item-source {
 	padding: 0px 4px;
 	margin-right: 3px;
 	color: #f5f5f5;
 	background-color: #b6b6b6;
 	border-radius: 3px;
-	text-transform: capitalize;
+	text-transform: uppercase;
 }
 
 .item-date {
-	color: #cbcbcb;
 	text-transform: lowercase;
 }
 
@@ -100,7 +100,10 @@ article h2 {
 	font-weight: 700;
 	margin-bottom: 5px;
 	text-shadow: 0px 1px 0px #fff;
-	
+}
+
+.auglysing {
+	text-align: center;
 }
 
 article h2 a {
@@ -128,7 +131,12 @@ article h2 a:hover {
 }
 
 footer {
+	font-size: 0.9em;
+	border-top: 1px #cbcbcb solid;
+	margin-top: 20px;
 	padding-top: 20px;
+	padding-bottom: 20px;
+	text-align: center;
 }
 
 
