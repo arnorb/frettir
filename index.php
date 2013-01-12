@@ -147,14 +147,14 @@ setlocale(LC_ALL, 'is_IS.utf8');
 
 
 
-				if ($source == 'mbl' || $source == 'visir' || $source == 'ruv') {
+				// if ($source == 'mbl' || $source == 'visir' || $source == 'ruv') {
 					
 					$filename = 'img/' . $md5 . '.jpg';
 
 				// Viðskiptablaðið has no image at all, so we just serve a small screenshot of their header
-				} elseif ($source == 'vb') {
+				/*} elseif ($source == 'vb') {
 					$filename = 'vb.jpg';
-				}
+				}*/
 
 				if (!file_exists($filename) ) {
 
@@ -169,6 +169,12 @@ setlocale(LC_ALL, 'is_IS.utf8');
 						$src = $img->attr('src');
 
 					// Visir has the src as a media thumbnail, but it is urlencoded. PHP makes it simple to decode, thankfully.
+					} elseif ($source == 'vb') {
+						$file = $item->get_permalink();
+						$pq = phpQuery::newDocumentFileHTML($file);
+						$div = $pq->find('.main_photo');
+						$img = $div->find('img');
+						$src = 'http://www.vb.is' . $img->attr('src');
 					} elseif ($source == 'visir') {
 						if ($enclosure = $item->get_enclosure()) {  
 							$src = rawurldecode($enclosure->get_thumbnail()); 
