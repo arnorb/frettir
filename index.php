@@ -100,9 +100,11 @@ setlocale(LC_ALL, 'is_IS.utf8');
 
 
 	<title>Hvað er að frétta?</title>
-
-	<link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,400,700,300' rel='stylesheet' type='text/css'>
+	<script type="text/javascript" src="//use.typekit.net/fzr6zim.js"></script>
+	<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+	<link href='http://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic,700italic|Open+Sans:300italic,400italic,700italic,400,300,700' rel='stylesheet' type='text/css'>
 	<link href='style.css' rel='stylesheet' type='text/css'>
+	<link href='colorbox.css' rel='stylesheet' type='text/css'>
 
 </head>
 
@@ -116,6 +118,13 @@ setlocale(LC_ALL, 'is_IS.utf8');
 		</header>	
 
 		<section id="content">
+
+		<form>
+			<input type="button" class="category-select innlent-button" name="innlent-button" value="Innlent">
+			<input type="button" class="category-select erlent-button" name="erlent-button" value="Erlent">
+			<input type="button" class="category-select vidskipti-button" name="vidskipti-button" value="Viðskipti">
+			<input type="button" class="category-select daegradvol-button" name="daegradvol-button" value="Dægradvöl">
+		</form>
 
 		<?php foreach ($first_items as $item):
 		$feed = $item->get_feed();
@@ -141,7 +150,7 @@ setlocale(LC_ALL, 'is_IS.utf8');
 
 		 <?php if ($md5 != $lastitem) : ?>
 
-			<article>
+			
 
 				<?php
 
@@ -150,11 +159,7 @@ setlocale(LC_ALL, 'is_IS.utf8');
 				// if ($source == 'mbl' || $source == 'visir' || $source == 'ruv') {
 					
 					$filename = 'img/' . $md5 . '.jpg';
-
-				// Viðskiptablaðið has no image at all, so we just serve a small screenshot of their header
-				/*} elseif ($source == 'vb') {
-					$filename = 'vb.jpg';
-				}*/
+					$filename2x = 'img/' . $md5 . '@2x.jpg';
 
 				if (!file_exists($filename) ) {
 
@@ -168,13 +173,14 @@ setlocale(LC_ALL, 'is_IS.utf8');
 						$img = $pq->find('img:first');
 						$src = $img->attr('src');
 
-					// Visir has the src as a media thumbnail, but it is urlencoded. PHP makes it simple to decode, thankfully.
+					// Unfortunately, vbl doesn't include any images in their feed. We have to get it via the DOM.
 					} elseif ($source == 'vb') {
 						$file = $item->get_permalink();
 						$pq = phpQuery::newDocumentFileHTML($file);
 						$div = $pq->find('.main_photo');
 						$img = $div->find('img');
 						$src = 'http://www.vb.is' . $img->attr('src');
+					// Visir has the src as a media thumbnail, but it is urlencoded. PHP makes it simple to decode, thankfully.
 					} elseif ($source == 'visir') {
 						if ($enclosure = $item->get_enclosure()) {  
 							$src = rawurldecode($enclosure->get_thumbnail()); 
@@ -189,7 +195,18 @@ setlocale(LC_ALL, 'is_IS.utf8');
 
 					}
 
+					// Trying to get a better img from mbl, currently not working.
+					if ($source == 'mbl') {
+						$expl = explode('/', $src);
+						$mblfile = substr($expl[6],0,-5);
+						$src = 'http://www.mbl.is/frimg/' . $expl[4] . '/' . $expl[5] . '/' . $mblfile . '.jpg';
+
+					}					
+
 					if (is_image($src) == true) {
+
+						// Uncomment for debug
+						// echo $src;
 					
 						// Rúv sometimes confuses us with png images and I suppose we might run into that from others as well.
 						if (exif_imagetype($src) == 3) {
@@ -245,16 +262,127 @@ setlocale(LC_ALL, 'is_IS.utf8');
 
 				}
 
+				if (!file_exists($filename2x) ) {
+
+					$hasimage = true;
+
+					// The image src from mbl is embedded in the description, so we have to fetch it from the DOM, using phpQuery.
+					if ($source == 'mbl' || $source == 'ruv') {
+						$src = '';
+						$texthtml = htmlspecialchars_decode($item->get_description()); 
+						$pq = phpQuery::newDocumentHTML($texthtml);
+						$img = $pq->find('img:first');
+						$src = $img->attr('src');
+
+					// Unfortunately, vbl doesn't include any images in their feed. We have to get it via the DOM.
+					} elseif ($source == 'vb') {
+						$file = $item->get_permalink();
+						$pq = phpQuery::newDocumentFileHTML($file);
+						$div = $pq->find('.main_photo');
+						$img = $div->find('img');
+						$src = 'http://www.vb.is' . $img->attr('src');
+					// Visir has the src as a media thumbnail, but it is urlencoded. PHP makes it simple to decode, thankfully.
+					} elseif ($source == 'visir') {
+						if ($enclosure = $item->get_enclosure()) {  
+							$src = rawurldecode($enclosure->get_thumbnail()); 
+						} 
+					}
+
+					// Rúv serves a tiny image. Their url schema is simple so we just need to replace the url with a new dir.
+					// I guess there must be a better way to do this, but this will do for now.
+					if ($source == 'ruv') {
+						$expl = explode('/', $src);
+						$src = 'http://www.ruv.is/files/imagecache/frmynd-stok-460x272/myndir/' . $expl[7];
+
+					}
+
+					if (is_image($src) == true) {
+					
+						// Rúv sometimes confuses us with png images and I suppose we might run into that from others as well.
+						if (exif_imagetype($src) == 3) {
+							$image = imagecreatefrompng($src);
+						} elseif (exif_imagetype($src) == 1) {
+							$image = imagecreatefromgif($src);
+						} else {
+							$image = imagecreatefromjpeg($src);
+						} 
+
+						$thumb_width2x = 300;
+						$thumb_height2x = 300;
+
+						$width = imagesx($image);
+						$height = imagesy($image);
+
+						$original_aspect = $width / $height;
+						$thumb_aspect = $thumb_width2x / $thumb_height2x;
+
+						if ( $original_aspect >= $thumb_aspect )
+						{
+						   // If image is wider than thumbnail (in aspect ratio sense)
+						   $new_height = $thumb_height2x;
+						   $new_width = $width / ($height / $thumb_height2x);
+						}
+						else
+						{
+						   // If the thumbnail is wider than the image
+						   $new_width = $thumb_width2x;
+						   $new_height = $height / ($width / $thumb_width2x);
+						}
+
+						$thumb = imagecreatetruecolor( $thumb_width2x, $thumb_height2x );
+
+						// Resize and crop
+						imagecopyresampled($thumb,
+						                   $image,
+						                   0 - ($new_width - $thumb_width2x) / 2, // Center the image horizontally
+						                   0 - ($new_height - $thumb_height2x) / 2, // Center the image vertically
+						                   0, 0,
+						                   $new_width, $new_height,
+						                   $width, $height);
+						imagejpeg($thumb, $filename2x, 80);
+
+						imagedestroy($image);
+						imagedestroy($thumb);
+
+					} else {
+						$replacements = array('noimg.jpg','noimg2.jpg','noimg3.jpg');
+						$rand_key = array_rand($replacements,1);
+						$filename = $replacements[$rand_key];
+					}
+
+				}
+
 				?> 
 
+				<?php
 
+							$feed = $item->get_feed();
 
-				<?php //if(is_image($filename)) : ?>
+							if ($feed->get_title() == 'Vísir - Innlent' || 
+								$feed->get_title() == 'mbl.is - Innlendar fréttir' || 
+								(strpos($feed->get_permalink(), 'innlent') !== false)
+								) {
+								$catname = 'innlent';
+							} else if ($feed->get_title() == 'Vísir - Erlent' || 
+								$feed->get_title() == 'mbl.is - Erlendar fréttir' || 
+								(strpos($feed->get_permalink(), 'erlent') !== false)
+								) {
+								$catname = 'erlent';
+
+							} else if ($feed->get_title() == 'Vísir - Viðskipti' || 
+									   $feed->get_title() == 'Viðskiptablaðið'){
+									$catname = 'vidskipti';
+							} else if ($feed->get_title() == 'Vísir - Lífið - Yfir' ||
+									   $feed->get_title() == 'mbl.is - Fólk'){
+									$catname = 'daegradvol';
+							}
+						?>
+
+				<article class="<?php echo $source; ?> <?php echo $catname; ?>-article">
+
 				<div class="newsimage">
-					<a href="<?php echo $item->get_permalink(); ?>" title="Frétt birt þann <?php echo $item->get_local_date('%e. %B %Y kl. %k:%M') ?>" target="_blank"><img src="<?php echo $filename ?>"></a>
+					<a href="<?php echo $item->get_permalink(); ?>" target="_blank"><img src="<?php echo $filename ?>"></a>
 				</div>
-
-				<?php //endif; ?>
 
 
 				<p class="meta">
@@ -286,35 +414,29 @@ setlocale(LC_ALL, 'is_IS.utf8');
 
 				</p>
 				
-				<h2><a href="<?php echo $item->get_permalink(); ?>" title="Frétt birt þann <?php echo $item->get_local_date('%e. %B %Y kl. %k:%M') ?>" target="_blank"><?php echo htmlspecialchars_decode($item->get_title()); ?></a></h2>
+				<h2><a href="
+
+				<?php
+
+				/*if ($source == "visir") {
+					echo "/cleaner.php?url=";
+				}*/
+
+				 echo $item->get_permalink(); ?>"
+
+				 <?php
+				 /*
+				 	if ($source == "visir") {
+						echo "class=\"cboxElement\" ";
+					}
+				*/
+				 ?>
+
+				  target="_blank"><?php echo htmlspecialchars_decode($item->get_title()); ?></a></h2>
 
 				
 
-				<p><span class="item-category 
-							<?php
-
-							$feed = $item->get_feed();
-
-							if ($feed->get_title() == 'Vísir - Innlent' || 
-								$feed->get_title() == 'mbl.is - Innlendar fréttir' || 
-								(strpos($feed->get_permalink(), 'innlent') !== false)
-								) {
-								echo 'innlent';
-							} else if ($feed->get_title() == 'Vísir - Erlent' || 
-								$feed->get_title() == 'mbl.is - Erlendar fréttir' || 
-								(strpos($feed->get_permalink(), 'erlent') !== false)
-								) {
-								echo 'erlent';
-
-							} else if ($feed->get_title() == 'Vísir - Viðskipti' || 
-									   $feed->get_title() == 'Viðskiptablaðið'){
-									echo 'vidskipti';
-							} else if ($feed->get_title() == 'Vísir - Lífið - Yfir' ||
-									   $feed->get_title() == 'mbl.is - Fólk'){
-									echo 'daegradvol';
-							}
-						?>
-						">
+				<p><span class="item-category <?php echo $catname; ?>">
 						<?php
 
 							if ($feed->get_title() == 'Vísir - Innlent' ||
@@ -356,12 +478,12 @@ setlocale(LC_ALL, 'is_IS.utf8');
 			</article>
 
 			<?php if ($itemnumber == 3) : ?>
-
+<!--
 			<article class="auglysing">
 				<h2><a href="#">Þín auglýsing hér?</a></h2>
 				<p>Viltu auglýsa á vefnum okkar? Sendu okkur póst á auglysingar@frett.ir.</p> 
 			</article>
-
+-->
 			<?php endif; ?>	
 
 			<?php endif; ?>	
@@ -378,9 +500,11 @@ setlocale(LC_ALL, 'is_IS.utf8');
 
 	</section>		
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
-<!--<script src="scripts.js"></script>-->
-
+<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="js/jquery.colorbox-min.js"></script>
+<script type="text/javascript" src="js/jquery.cookie.js"></script>
+<!--<script type="text/javascript" src="js/retina.js"></script>-->
+<script type="text/javascript" src="js/scripts.js"></script>
 <script type="text/javascript">
 
   var _gaq = _gaq || [];

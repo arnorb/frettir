@@ -1,6 +1,7 @@
 /* Eric Meyer's Reset CSS v2.0 - http://cssreset.com */
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{border:0;font-size:100%;font:inherit;vertical-align:baseline;margin:0;padding:0}article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{display:block}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:none}table{border-collapse:collapse;border-spacing:0}
 
+
 body {
 	background-color: #424242;
 	background-image: url('pattern.png');
@@ -50,11 +51,7 @@ body {
 }
 
 .item-source {
-	padding: 0px 4px;
-	margin-right: 3px;
-	color: #f5f5f5;
-	background-color: #b6b6b6;
-	border-radius: 3px;
+	font-weight: 700;
 	text-transform: uppercase;
 }
 
@@ -137,6 +134,79 @@ footer {
 	padding-top: 20px;
 	padding-bottom: 20px;
 	text-align: center;
+}
+
+.loaded-item {
+	font-family: 'Droid Serif', serif;
+	width: 600px;
+}
+
+.loaded-item img {
+	width: 100%;
+}
+
+.loaded-item h3 {
+	font-size: 2em;
+	line-height: 1.2;
+	font-weight: 700;
+	margin: 0px 40px 0px 20px;
+	padding-bottom: 5px;
+	padding-top: 6px;
+}
+
+.loaded-item h3 a {
+	color: #363636;
+	text-decoration: none;
+}
+
+.loaded-item a:hover {
+	color: #1d1d1d;
+}
+
+.loaded-item strong {
+	font-weight: 700;
+}
+
+.loaded-item-content {
+	margin: 0 20px 20px 20px;
+}
+
+.loaded-img {
+	width: 100%;
+	max-height: 320px;
+	overflow: hidden;
+	display: block;
+	margin-bottom: 10px;
+}
+
+.loaded-img img {
+	margin-top: -30px;
+}
+
+.category-select {
+	border: 0;
+	padding: 4px 6px;
+	border-radius: 3px;
+	text-transform: uppercase;
+	color: #f5f5f5;	
+}
+
+.innlent-button, .erlent-button {
+	background-color: #004a80;
+}
+
+.vidskipti-button {
+	background-color: #ffa400;
+}
+
+.daegradvol-button {
+	background-color: #cc0fae;
+}
+
+
+
+.button-gray {
+	background-color: #b6b6b6!important;
 }
 
 
