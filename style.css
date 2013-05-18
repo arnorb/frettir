@@ -2,45 +2,133 @@
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{border:0;font-size:100%;font:inherit;vertical-align:baseline;margin:0;padding:0}article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{display:block}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:none}table{border-collapse:collapse;border-spacing:0}
 
 
+/* ICON FONTS */
+
+@font-face {
+	font-family: 'icomoon-essential';
+	src:url('fonts/icomoon-essential.eot');
+	src:url('fonts/icomoon-essential.eot?#iefix') format('embedded-opentype'),
+		url('fonts/icomoon-essential.woff') format('woff'),
+		url('fonts/icomoon-essential.ttf') format('truetype'),
+		url('fonts/icomoon-essential.svg#icomoon-essential') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+/* Use the following CSS code if you want to use data attributes for inserting your icons */
+[data-icon]:before {
+	font-family: 'icomoon-essential';
+	content: attr(data-icon);
+	speak: none;
+	font-weight: normal;
+	font-variant: normal;
+	text-transform: none;
+	line-height: 1;
+	-webkit-font-smoothing: antialiased;
+}
+
+/* Use the following CSS code if you want to have a class per icon */
+/*
+Instead of a list of all class selectors,
+you can use the generic selector below, but it's slower:
+[class*="icon-"] {
+*/
+.icon-cog, .icon-newspaper {
+	font-family: 'icomoon-essential';
+	speak: none;
+	font-style: normal;
+	font-weight: normal;
+	font-variant: normal;
+	text-transform: none;
+	line-height: 1;
+	-webkit-font-smoothing: antialiased;
+}
+.icon-cog:before {
+	content: "\e000";
+}
+.icon-newspaper:before {
+	content: "\e001";
+}
+
+
+
+/* END OF ICON FONTS */
+
+::selection {
+	background: rgb(255,135,0);
+	color: rgb(255,255,255);
+}
+
 body {
-	background-color: #424242;
-	background-image: url('pattern.png');
-	font-family: 'Open Sans', sans-serif;
+	background-color: #f5f5f5;
+	/*background-image: url('pattern.png');*/
+	background-attachment: fixed;
+	font-family: 'Helvetica Neue', 'Open Sans', sans-serif;
 	font-size: 14px;
 	line-height: 1.5em;
 }
 
 #wrapper {
-	background-color: #f5f5f5;
 	/*background-image: url('debut_light2.png');*/
+	width: 960px;
+	border-left: 1px #CBCBCB solid;
+	overflow: auto;
+}
+
+header {
+	position: fixed;
+
+	height: 70px;
 	margin: 0 auto;
-	width: 595px;
-
 }
 
-#wrapper header {
-	background-color: #262626;
-	padding: 25px 30px;
-	margin-bottom: 20px;
-	border-bottom: 1px #cbcbcb solid;
-}
-
-#wrapper h1 {
+header h1 {
+	padding: 27px 28px;
 	font-weight: 300;
-	font-size: 2em;
-	color: #d7d7d7;
+	font-size: 4em;
+	color: rgb(139, 139, 139);
 }
 
-#wrapper h1 .alpha {
+header h1 .alpha {
 	font-size: 0.7em;
 	font-style: italic;
 	color: #616161;
 }
 
-#content {
-	padding: 0 30px;
+.settings-toggle {
+	float: right;
+	font-size: 0.8em;
+	color: #707070;
+	text-decoration: none;
 }
 
+.settings-toggle:hover {
+	color: #8d8d8d;
+}
+
+.settings-active {
+	color: #8d8d8d!important;
+}
+
+#content {
+	padding: 50px 110px;
+	width: 465px;
+	float: left;
+	background-color: rgb(233, 233, 233); 
+	box-shadow: 2px 0px 5px rgb(204, 204, 204);
+}
+
+#sidebar {
+	width: 265px;
+	float: left;
+	position: fixed;
+	margin-left: 770px;
+	margin-top: 35px;
+}
+
+#sidebar ul li {
+	margin-bottom: 10px;
+}
 
 
 .meta {
@@ -63,40 +151,52 @@ body {
 	text-transform: uppercase;
 }
 
-.innlent, .erlent {
+.innlent {
 	color: #004a80;
 }
 
+.erlent {
+	color: #2180A5;
+}
+
 .vidskipti {
-	color: #ffa400;
+	color: #ff8f00;
 }
 
 .daegradvol {
 	color: #cc0fae;
 }
 
+.ithrottir {
+	color: #378800;
+}
+
 article {
-	border-top: 1px #cbcbcb solid;
-	margin-top: 20px;
-	padding-top: 20px;
-	/*cursor: hand;
-	cursor: pointer;*/
-	clear: both;
-	overflow: hidden;
+	margin-bottom: 20px;
+	padding-bottom: 20px;
+	width: 595px;
+	padding-left: 20px;
+	min-height: 150px;
+}
+
+article:after {
+  content: ".";
+  visibility: hidden;
+  clear: both;
 }
 
 article:first-child {
 	border-top: none;
-	margin-top: 0;
 	padding-top: 0;
 }
 
 
 article h2 {
-	font-size: 1.2em;
+	font-size: 1.5em;
 	font-weight: 700;
 	margin-bottom: 5px;
 	text-shadow: 0px 1px 0px #fff;
+	line-height: 1.1;
 }
 
 .auglysing {
@@ -116,10 +216,11 @@ article h2 a:hover {
 	width: 150px;
 	height: 150px;
 	float: right;
-	margin: 0 0 0 10px;
+	margin: -5px 9px 0px 20px;
 	overflow: hidden;
-	border: 1px solid rgba(0, 0, 0, .1);
-
+	border: 1px solid rgb(202, 202, 202);
+	border-radius: 5px;
+	box-shadow: 0px 0px 14px rgb(162, 162, 162);
 }
 
 .newsimage img {
@@ -129,9 +230,10 @@ article h2 a:hover {
 
 footer {
 	font-size: 0.9em;
-	border-top: 1px #cbcbcb solid;
+	/*border-top: 1px #cbcbcb solid;
+	padding-top: 20px;*/
 	margin-top: 20px;
-	padding-top: 20px;
+	
 	padding-bottom: 20px;
 	text-align: center;
 }
@@ -185,28 +287,76 @@ footer {
 
 .category-select {
 	border: 0;
-	padding: 4px 6px;
-	border-radius: 3px;
+	padding: 2px 9px;
 	text-transform: uppercase;
-	color: #f5f5f5;	
+	text-decoration: none;
+	color: rgb(41, 41, 41);	
+	font-size: 1em;
+	font-weight: 700;
+	cursor: hand;
+	cursor: pointer;
+	margin-right: 10px;	
+	width: 75px;
+	height: 30px;
 }
 
-.innlent-button, .erlent-button {
-	background-color: #004a80;
+.innlent-button {
+	border-left: 4px solid rgb(0, 74, 128);
+}
+
+.erlent-button {
+	border-left: 4px solid #2180A5;
 }
 
 .vidskipti-button {
-	background-color: #ffa400;
+	border-left: 4px solid #ff8f00;
 }
 
 .daegradvol-button {
-	background-color: #cc0fae;
+	border-left: 4px solid #cc0fae;
 }
 
+.ithrottir-button {
+	border-left: 4px solid #378800;
+}
 
+.icon-large {
+	font-size: 18em;
+	padding: 20px;
+	text-align: center;
+	color: #CCC;
+}
 
 .button-gray {
-	background-color: #b6b6b6!important;
+	color: #b6b6b6!important;
+}
+
+.excerpt {
+	text-decoration: none;
+	color: #111111;
+}
+
+#settingspanel {
+	background-color: #dfdfdf;
+	padding: 15px 30px;
+	display: none;
+	text-align: center;
+	height: 20px;
+}
+
+.weather {
+	text-transform: uppercase;
+	font-weight: 700;
+	text-align: center;
+	color: #FAFAFA;
+	background-color: #999;
+	margin: 30px;
+	padding: 7px;
+}
+
+.milk {
+	/* FÜNKE */
+	color: rgb(245, 245, 245);
 }
 
 
@@ -229,8 +379,18 @@ and (max-device-width : 480px) {
 		width: 100%;
 	}
 
-	.newsimage {
+	header {
+		display: block;
 		width: 100%;
+		height: 150px;
+	}
+
+	.headersp {
+		height: 175px;
+	}
+
+	.newsimage {
+		width: 30%;
 		height: auto;
 	}
 }

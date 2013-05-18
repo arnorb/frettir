@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Vandamál 1</title>
+    </head>
+<body>
+ 
+<button id="button1">Takki 1</button>
+<button id="button2">Takki 2</button>
+<button id="button3">Takki 3</button>
+ 
+<script type="text/javascript">
+        var elems = ['button1', 'button2', 'button3'];
+        var nums = [];
+        for (var i=0; i<elems.length; i++) {
+        	(function(i) {
+	            btn = document.getElementById(elems[i]);
+	            btn.addEventListener('click', function() { alert('Hello button ' + i); }, false);        		
+        	});
+        };
+</script>
+ 
+</body>
+</html>

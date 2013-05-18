@@ -6,18 +6,22 @@ $time = microtime(true);
 require_once('../php/autoloader.php');
 require_once('../php/phpQuery.php');
 require('relativedate.php');
+require('functions.php');
 
 $feeds = array(
 	'http://www.visir.is/apps/pbcs.dll/section?Category=FRETTIR01&Template=rss&mime=xml',
 	'http://www.visir.is/apps/pbcs.dll/section?Category=VIDSKIPTI&Template=rss&mime=xml',
 	'http://www.visir.is/apps/pbcs.dll/section?Category=LIFID&Template=rss&mime=xml',
 	'http://www.visir.is/apps/pbcs.dll/section?Category=FRETTIR02&Template=rss&mime=xml',
+	'http://www.visir.is/apps/pbcs.dll/section?Category=IDROTTIR&Template=rss&mime=xml',
 	'http://www.mbl.is/feeds/innlent/',
 	'http://www.mbl.is/feeds/erlent/',
 	'http://www.mbl.is/feeds/folk/',
+	'http://www.mbl.is/feeds/sport/',
 	'http://www.vb.is/rss/',
 	'http://www.ruv.is/rss/innlent',
-	'http://www.ruv.is/rss/erlent'
+	'http://www.ruv.is/rss/erlent',
+	'http://ruv.is/rss/sport'
 	);
 
 $first_items = array();
@@ -100,7 +104,7 @@ setlocale(LC_ALL, 'is_IS.utf8');
 
 
 	<title>Hvað er að frétta?</title>
-	<script type="text/javascript" src="//use.typekit.net/fzr6zim.js"></script>
+	<script type="text/javascript" src="//use.typekit.net/rda2zig.js"></script>
 	<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
 	<link href='http://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic,700italic|Open+Sans:300italic,400italic,700italic,400,300,700' rel='stylesheet' type='text/css'>
 	<link href='style.css' rel='stylesheet' type='text/css'>
@@ -111,50 +115,30 @@ setlocale(LC_ALL, 'is_IS.utf8');
 <body>
 
 
+
+
+
 	<section id="wrapper">
 
-		<header>
-			<h1>Hvað er að frétta? <span class="alpha">alpha</h1>
-		</header>	
+
+	<header>
+		<h1><i class="icon-newspaper"></i><!--<span class="alpha">alpha</span> <a href="javascript:void(0);" class="settings-toggle"><i class="icon-cog"></i></a>--> </h1>
+
+	</header>	
+
+
+		<!--<div class="weather"><?php // include('vedur.php'); ?></div>-->
 
 		<section id="content">
-
-		<form>
-			<input type="button" class="category-select innlent-button" name="innlent-button" value="Innlent">
-			<input type="button" class="category-select erlent-button" name="erlent-button" value="Erlent">
-			<input type="button" class="category-select vidskipti-button" name="vidskipti-button" value="Viðskipti">
-			<input type="button" class="category-select daegradvol-button" name="daegradvol-button" value="Dægradvöl">
-		</form>
-
 		<?php foreach ($first_items as $item):
 		$feed = $item->get_feed();
-		
-		// figure out the source or provider
-		if (strpos($feed->get_title(), 'mbl.is') !== false) {
-			$source = 'mbl';
-		}
-		elseif (strpos($feed->get_title(), 'Vísir') !== false) {
-			$source = 'visir';
-		}
-		elseif (strpos($feed->get_title(), 'Viðskiptablaðið') !== false) {
-			$source = 'vb';
-		} elseif (strpos($feed->get_permalink(), 'ruv.is') !== false) {
-			$source = 'ruv';
-		} else {
-			$source = 'unknown';
-		}
+		$source = getsource($feed);
+		$catname = getcatname($feed); 
+
 
 		$md5 = md5($source . $item->get_date('YmdHis') . $item->get_title() . $item->get_description() );
 
-		 ?>
-
-		 <?php if ($md5 != $lastitem) : ?>
-
-			
-
-				<?php
-
-
+		if ($md5 != $lastitem) : 
 
 				// if ($source == 'mbl' || $source == 'visir' || $source == 'ruv') {
 					
@@ -172,13 +156,35 @@ setlocale(LC_ALL, 'is_IS.utf8');
 						$pq = phpQuery::newDocumentHTML($texthtml);
 						$img = $pq->find('img:first');
 						$src = $img->attr('src');
+						$newsrc = '';
+						/*if ($source == 'mbl' && $src == '') {
+							$file = $item->get_permalink();
+							$pq = phpQuery::newDocumentFileHTML($file);
+							$newsrc = $pq->find('meta[property=og:image]')->attr('content');
+							echo $newsrc;*/
+							/*$nimg = $pq->find('.mbl-video script');
+							preg_match('/\b(?:(?:https?|ftp|file):\/\/|www\.|ftp\.)[-A-Z0-9+&@#\/%=~_|$?!:,.]*[A-Z0-9+&@#\/%=~_|$].jpg/i', $nimg, $matches);
+							$src = $matches[0];*/
+							//echo exif_imagetype($src) + "<br>";
+							// echo $matches[0];
+							//echo $src;
+							/*$src = $newsrc;
+
+						};
+						echo $src;
+						echo exif_imagetype($newsrc);*/
 
 					// Unfortunately, vbl doesn't include any images in their feed. We have to get it via the DOM.
 					} elseif ($source == 'vb') {
 						$file = $item->get_permalink();
 						$pq = phpQuery::newDocumentFileHTML($file);
 						$div = $pq->find('.main_photo');
-						$img = $div->find('img');
+						if ($div == '') {
+							$dub = $pq->find('#galleria');
+							$img = $dub->find('img:first');
+						} else {
+							$img = $div->find('img');
+						};
 						$src = 'http://www.vb.is' . $img->attr('src');
 					// Visir has the src as a media thumbnail, but it is urlencoded. PHP makes it simple to decode, thankfully.
 					} elseif ($source == 'visir') {
@@ -202,7 +208,7 @@ setlocale(LC_ALL, 'is_IS.utf8');
 						$src = 'http://www.mbl.is/frimg/' . $expl[4] . '/' . $expl[5] . '/' . $mblfile . '.jpg';
 
 					}					
-
+					
 					if (is_image($src) == true) {
 
 						// Uncomment for debug
@@ -231,6 +237,7 @@ setlocale(LC_ALL, 'is_IS.utf8');
 						   // If image is wider than thumbnail (in aspect ratio sense)
 						   $new_height = $thumb_height;
 						   $new_width = $width / ($height / $thumb_height);
+
 						}
 						else
 						{
@@ -261,7 +268,7 @@ setlocale(LC_ALL, 'is_IS.utf8');
 					}
 
 				}
-
+				/*
 				if (!file_exists($filename2x) ) {
 
 					$hasimage = true;
@@ -273,13 +280,27 @@ setlocale(LC_ALL, 'is_IS.utf8');
 						$pq = phpQuery::newDocumentHTML($texthtml);
 						$img = $pq->find('img:first');
 						$src = $img->attr('src');
+						if ($source == 'mbl' && $src == '') {
+							$file2 = $item->get_permalink();
+							$pq2 = phpQuery::newDocumentFileHTML($file2);
+							$nimg = $pq2->find('.mbl-video script');
+							echo $nimg;
+							preg_match('/\b(?:(?:https?|ftp|file):\/\/|www\.|ftp\.)[-A-Z0-9+&@#\/%=~_|$?!:,.]*[A-Z0-9+&@#\/%=~_|$].jpg/i', $nimg, $matches);
+							$src = $matches[0];
+							echo $src;
+						};						
 
 					// Unfortunately, vbl doesn't include any images in their feed. We have to get it via the DOM.
 					} elseif ($source == 'vb') {
 						$file = $item->get_permalink();
 						$pq = phpQuery::newDocumentFileHTML($file);
 						$div = $pq->find('.main_photo');
-						$img = $div->find('img');
+						if ($div == '') {
+							$dub = $pq->find('#galleria');
+							$img = $dub->find('img:first');
+						} else {
+							$img = $div->find('img');
+						};
 						$src = 'http://www.vb.is' . $img->attr('src');
 					// Visir has the src as a media thumbnail, but it is urlencoded. PHP makes it simple to decode, thankfully.
 					} elseif ($source == 'visir') {
@@ -349,35 +370,10 @@ setlocale(LC_ALL, 'is_IS.utf8');
 						$rand_key = array_rand($replacements,1);
 						$filename = $replacements[$rand_key];
 					}
+					
+				}*/
 
-				}
-
-				?> 
-
-				<?php
-
-							$feed = $item->get_feed();
-
-							if ($feed->get_title() == 'Vísir - Innlent' || 
-								$feed->get_title() == 'mbl.is - Innlendar fréttir' || 
-								(strpos($feed->get_permalink(), 'innlent') !== false)
-								) {
-								$catname = 'innlent';
-							} else if ($feed->get_title() == 'Vísir - Erlent' || 
-								$feed->get_title() == 'mbl.is - Erlendar fréttir' || 
-								(strpos($feed->get_permalink(), 'erlent') !== false)
-								) {
-								$catname = 'erlent';
-
-							} else if ($feed->get_title() == 'Vísir - Viðskipti' || 
-									   $feed->get_title() == 'Viðskiptablaðið'){
-									$catname = 'vidskipti';
-							} else if ($feed->get_title() == 'Vísir - Lífið - Yfir' ||
-									   $feed->get_title() == 'mbl.is - Fólk'){
-									$catname = 'daegradvol';
-							}
-						?>
-
+				 ?>
 				<article class="<?php echo $source; ?> <?php echo $catname; ?>-article">
 
 				<div class="newsimage">
@@ -386,9 +382,7 @@ setlocale(LC_ALL, 'is_IS.utf8');
 
 
 				<p class="meta">
-
 					<span class="item-source">
-						
 						<?php
 
 							$feed = $item->get_feed();
@@ -409,53 +403,39 @@ setlocale(LC_ALL, 'is_IS.utf8');
 							}
 
 						?></span>
-	
 					<span class="item-date">fyrir <?php echo doRelativeDate( $item->get_date( SIMPLEPIE_RELATIVE_DATE ) );?></span>
-
 				</p>
-				
-				<h2><a href="
-
-				<?php
-
-				/*if ($source == "visir") {
-					echo "/cleaner.php?url=";
-				}*/
-
-				 echo $item->get_permalink(); ?>"
+				<h2><a href="<?php echo $item->get_permalink(); ?>" target="_blank"><?php echo htmlspecialchars_decode($item->get_title()); ?></a></h2>
 
 				 <?php
 				 /*
+				 	/*if ($source == "visir") {
+					echo "/cleaner.php?url=";
+				}
+
+				 
 				 	if ($source == "visir") {
 						echo "class=\"cboxElement\" ";
 					}
+
+
 				*/
-				 ?>
-
-				  target="_blank"><?php echo htmlspecialchars_decode($item->get_title()); ?></a></h2>
-
-				
-
+				 ?>				
+			  	<a href="<?php echo $item->get_permalink(); ?>" target="_blank" class="excerpt">
 				<p><span class="item-category <?php echo $catname; ?>">
 						<?php
 
-							if ($feed->get_title() == 'Vísir - Innlent' ||
-								$feed->get_title() ==  'mbl.is - Innlendar fréttir' || 
-								(strpos($feed->get_permalink(), 'innlent') !== false)
-								) {
+							if ($catname == 'innlent') {
 								echo 'innlent';
-							} else if ($feed->get_title() == 'Vísir - Erlent' || 
-								$feed->get_title() == 'mbl.is - Erlendar fréttir' || 
-								(strpos($feed->get_permalink(), 'erlent') !== false)
-								) {
+							} else if ($catname == 'erlent') {
 								echo 'erlent';
 
-							} else if ($feed->get_title() == 'Vísir - Viðskipti' || 
-									   $feed->get_title() == 'Viðskiptablaðið'){
+							} else if ($catname == 'vidskipti'){
 									echo 'viðskipti';
-							} else if ($feed->get_title() == 'Vísir - Lífið - Yfir' ||
-									   $feed->get_title() == 'mbl.is - Fólk'){
+							} else if ($catname == 'daegradvol'){
 									echo 'dægradvöl';
+							} else if ($catname == 'ithrottir') {
+								echo 'íþróttir';
 							}
 						?></span> <?php
 
@@ -475,24 +455,37 @@ setlocale(LC_ALL, 'is_IS.utf8');
 							
 						?>
 						</p>
+					</a>
 			</article>
 
+
+
 			<?php if ($itemnumber == 3) : ?>
-<!--
-			<article class="auglysing">
-				<h2><a href="#">Þín auglýsing hér?</a></h2>
-				<p>Viltu auglýsa á vefnum okkar? Sendu okkur póst á auglysingar@frett.ir.</p> 
-			</article>
--->
+
 			<?php endif; ?>	
 
 			<?php endif; ?>	
 
 		<?php endforeach; ?>
 
+		<div class="icon-large"><i class="icon-newspaper"></i></div>
+
 		<footer>
-			<?php echo "Vinnslutími: ".round((microtime(true) - $time),2)." sekúndur"; ?>
+			<!--<?php echo "Vinnslutími: ".round((microtime(true) - $time),2)." sekúndur"; ?>-->
 		</footer>
+
+		</section>
+
+		<section id="sidebar">
+				<ul>
+					<li> <a href="javascript:void(0);" class="category-select innlent-button">Innlent</a></li>
+					<li> <a href="javascript:void(0);" class="category-select erlent-button">Erlent</a></li>
+					<li> <a href="javascript:void(0);" class="category-select vidskipti-button">Viðskipti</a></li>
+					<li> <a href="javascript:void(0);" class="category-select daegradvol-button">Dægradvöl</a></li>
+					<li> <a href="javascript:void(0);" class="category-select ithrottir-button">Íþróttir</a></li>
+				</ul>
+
+				<div class="milk">Nevernude</div>
 
 		</section>
 
