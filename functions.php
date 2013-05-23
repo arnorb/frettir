@@ -1,8 +1,11 @@
 <?php
 
+
+// A function for getting the source name as a string.
+// A better implementation would be to use keys instead,
+// but an even better implementation would be to use a database.
 function getsource ($feed) {
-		
-		// figure out the source or provider
+
 		if (strpos($feed->get_title(), 'mbl.is') !== false) {
 			$source = 'mbl';
 		}
@@ -20,6 +23,7 @@ function getsource ($feed) {
 		return $source;
 	};
 
+// getting the category name
 function getcatname ($feed) {
 	if ($feed->get_title() == 'Vísir - Innlent' || 
 	$feed->get_title() == 'mbl.is - Innlendar fréttir' || 
